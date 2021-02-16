@@ -79,15 +79,15 @@ class GUI:
         self.save_file = Button(master, text="Select folder to save data", command=self.saveFile, anchor='w', width=20, justify=LEFT)
         self.save_file.pack(fill=X)
 
-        image = Image.open("roo.png")
-        photo = ImageTk.PhotoImage(image)
+        # image = Image.open("roo.png")
+        # photo = ImageTk.PhotoImage(image)
 
         self.label_data_message = Label(self.master, text= data_str, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
         self.label_data_message.pack(fill=X)
 
-        label = Label(image=photo, borderwidth=0 , highlightthickness=0, relief=None, padx=0,pady=0)
-        label.image = photo # keep a reference!
-        label.pack()
+        # label = Label(image=photo, borderwidth=0 , highlightthickness=0, relief=None, padx=0,pady=0)
+        # label.image = photo # keep a reference!
+        # label.pack()
 
         self.label_inv = Label(self.master, text="Invoices file path: ", bg="black", fg="green", anchor='w', width=20, justify=LEFT)
         self.label_inv.pack(fill=X, side=BOTTOM)
