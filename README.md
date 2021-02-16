@@ -42,7 +42,6 @@ Should work in powershell and bash
 * Create script to read the rooparse email box 
 * Add a system to pass on the rooparse version in the file name 
 
->>>>>>> f65d09d58bcfd5dd6cd905c555486811fba12dae
 ## Done
 ***
 * Change format of date
