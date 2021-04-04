@@ -47,13 +47,16 @@ file ouput containing the csv data to: rooparse@gmail.com
 Please also email with any questions and if you would like to 
 contribute to rooparse itself.
 '''
-def zipdir(path_to_save, path_to_compress): 
+
+
+def zipdir(path_to_save, path_to_compress):
     f = os.path.join(path_to_save, "data.zip" + VERSION)
-    if os.path.exists(f): # Check if file exists, and delete if true
+    if os.path.exists(f):  # Check if file exists, and delete if true
         os.remove(f)
     shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', path_to_compress)
-    messagebox.showinfo("Thank's!", "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-    
+    messagebox.showinfo("Thanks!",
+                        "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
+
 
 class GUI:
     def __init__(self, master):
@@ -61,74 +64,82 @@ class GUI:
         master.title("Roo Parse " + VERSION)
         master.configure(background='black')
 
-        self.run_button = Button(master, text="Run", command = lambda: main(self.inv_folder), anchor='w', width=20,justify=LEFT)
-        self.run_button.pack(fill=X)    
+        self.run_button = Button(master, text="Run", command=lambda: main(self.inv_folder), anchor='w', width=20,
+                                 justify=LEFT)
+        self.run_button.pack(fill=X)
 
-        self.help_button = Button(master, text="Help", command=self.help,width=20, anchor='w', justify=LEFT)
-        self.help_button.pack(fill=X)   
+        self.help_button = Button(master, text="Help", command=self.help, width=20, anchor='w', justify=LEFT)
+        self.help_button.pack(fill=X)
 
         self.about_button = Button(master, text="About", command=self.about, anchor='w', width=20, justify=LEFT)
-        self.about_button.pack(fill=X)   
+        self.about_button.pack(fill=X)
 
-        self.save_button = Button(master, text="Save", command = lambda : zipdir (self.save_folder,'outputs'), anchor='w', width=20, justify=LEFT)
-        self.save_button.pack(fill=X)  
+        self.save_button = Button(master, text="Save", command=lambda: zipdir(self.save_folder, 'outputs'), anchor='w',
+                                  width=20, justify=LEFT)
+        self.save_button.pack(fill=X)
 
-        self.browse_file = Button(master, text="Select invoice folder", command=self.browseFile, anchor='w', width=20, justify=LEFT)
+        self.browse_file = Button(master, text="Select invoice folder", command=self.browseFile, anchor='w', width=20,
+                                  justify=LEFT)
         self.browse_file.pack(fill=X)
 
-        self.save_file = Button(master, text="Select folder to save data", command=self.saveFile, anchor='w', width=20, justify=LEFT)
+        self.save_file = Button(master, text="Select folder to save data", command=self.saveFile, anchor='w', width=20,
+                                justify=LEFT)
         self.save_file.pack(fill=X)
 
         # image = Image.open("roo.png")
         # photo = ImageTk.PhotoImage(image)
 
-        self.label_data_message = Label(self.master, text= data_str, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
+        self.label_data_message = Label(self.master, text=data_str, bg="black", fg="green", anchor='w', width=20,
+                                        justify=LEFT)
         self.label_data_message.pack(fill=X)
 
         # label = Label(image=photo, borderwidth=0 , highlightthickness=0, relief=None, padx=0,pady=0)
         # label.image = photo # keep a reference!
         # label.pack()
 
-        self.label_inv = Label(self.master, text="Invoices file path: ", bg="black", fg="green", anchor='w', width=20, justify=LEFT)
+        self.label_inv = Label(self.master, text="Invoices file path: ", bg="black", fg="green", anchor='w', width=20,
+                               justify=LEFT)
         self.label_inv.pack(fill=X, side=BOTTOM)
 
-        self.label_save = Label(self.master, text="Save file path: ", bg="black", fg="green", anchor='w', width=20, justify=LEFT)
+        self.label_save = Label(self.master, text="Save file path: ", bg="black", fg="green", anchor='w', width=20,
+                                justify=LEFT)
         self.label_save.pack(fill=X, side=BOTTOM)
 
         # Text input bar---------------------#
-        #self.text = StringVar()
-        #self.e = Entry(root, textvariable=self.text)
-        #self.e.pack()
-        #self.run_button = Button(master, text="Run", command = lambda: main(self.e.get()))
-        #self.run_button.pack(fill=X)
+        # self.text = StringVar()
+        # self.e = Entry(root, textvariable=self.text)
+        # self.e.pack()
+        # self.run_button = Button(master, text="Run", command = lambda: main(self.e.get()))
+        # self.run_button.pack(fill=X)
 
-        #self.close_button = Button(master, text="Close", command=master.quit)
-        #self.close_button.pack(fill=X)
-
-
+        # self.close_button = Button(master, text="Close", command=master.quit)
+        # self.close_button.pack(fill=X)
 
     def browseFile(self):
         self.label_inv.destroy()
         self.inv_folder = askdirectory()
-        self.label_inv = Label(self.master, text="Invoices file path: " + self.inv_folder, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
+        self.label_inv = Label(self.master, text="Invoices file path: " + self.inv_folder, bg="black", fg="green",
+                               anchor='w', width=20, justify=LEFT)
         self.label_inv.pack(fill=X, side=BOTTOM)
 
     def saveFile(self):
         self.label_save.destroy()
         self.save_folder = askdirectory()
-        self.label_save = Label(self.master, text="Save file path: " + self.save_folder, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
+        self.label_save = Label(self.master, text="Save file path: " + self.save_folder, bg="black", fg="green",
+                                anchor='w', width=20, justify=LEFT)
         self.label_save.pack(fill=X, side=BOTTOM)
-        
+
     def save_message(self):
-        messagebox.showinfo("Thank's!", "Data saved to :" + str(self.save_folder) + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-    
+        messagebox.showinfo("Thanks!", "Data saved to :" + str(
+            self.save_folder) + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
+
     def help(self):
         messagebox.showinfo("Help", help_str)
 
     def about(self):
         messagebox.showinfo("Help", liscense)
 
+
 root = Tk()
 my_gui = GUI(root)
 root.mainloop()
-
