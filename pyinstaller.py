@@ -3,5 +3,6 @@ import PyInstaller.__main__
 PyInstaller.__main__.run([
     'gui.py',
     '--windowed',
-    '-n RooParse'
+    '-F',  # standalone file
+    '-n RooParse'  # name of the programme
 ])

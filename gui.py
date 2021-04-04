@@ -1,9 +1,20 @@
 from tkinter import *
 from tkinter.filedialog import askdirectory
-from tkinter import messagebox, ttk
-from PIL import Image, ImageTk
+from tkinter import messagebox
+# from tkinter import ttk
+# from PIL import Image, ImageTk
+import os
+import shutil
+import tempfile
+# from mine import *
+import mine as mine
 
-from mine import *
+'''
+After initial release changes to mine.py, the parsing script increase the version number to the next whole number.
+After changes to gui.py add 0.1 to version number.
+'''
+
+VERSION = "0.1"
 
 liscense = '''
 
@@ -49,22 +60,13 @@ contribute to rooparse itself.
 '''
 
 
-def zipdir(path_to_save, path_to_compress):
-    f = os.path.join(path_to_save, "data.zip" + VERSION)
-    if os.path.exists(f):  # Check if file exists, and delete if true
-        os.remove(f)
-    shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', path_to_compress)
-    messagebox.showinfo("Thanks!",
-                        "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-
-
 class GUI:
     def __init__(self, master):
         self.master = master
         master.title("Roo Parse " + VERSION)
         master.configure(background='black')
 
-        self.run_button = Button(master, text="Run", command=lambda: main(self.inv_folder), anchor='w', width=20,
+        self.run_button = Button(master, text="Run", command=lambda: self.miner(self.inv_folder), anchor='w', width=20,
                                  justify=LEFT)
         self.run_button.pack(fill=X)
 
@@ -74,7 +76,7 @@ class GUI:
         self.about_button = Button(master, text="About", command=self.about, anchor='w', width=20, justify=LEFT)
         self.about_button.pack(fill=X)
 
-        self.save_button = Button(master, text="Save", command=lambda: zipdir(self.save_folder, 'outputs'), anchor='w',
+        self.save_button = Button(master, text="Save", command=lambda: self.zipdir(self.save_folder), anchor='w',
                                   width=20, justify=LEFT)
         self.save_button.pack(fill=X)
 
@@ -105,6 +107,10 @@ class GUI:
                                 justify=LEFT)
         self.label_save.pack(fill=X, side=BOTTOM)
 
+        # self.test_return  # for debugging
+        self.tempdir = tempfile.mkdtemp()
+        print(self.tempdir)
+
         # Text input bar---------------------#
         # self.text = StringVar()
         # self.e = Entry(root, textvariable=self.text)
@@ -114,6 +120,22 @@ class GUI:
 
         # self.close_button = Button(master, text="Close", command=master.quit)
         # self.close_button.pack(fill=X)
+
+    def miner(self, invoice_path):  # trying to move function to this file
+        text_list = mine.get_text_list(invoice_path)
+
+        fa_df = mine.concat_fee_adjustments(text_list)
+        # self.test_return = fa_df  # should be defined in init instead
+        # print(self.test_return)
+        fa_df.to_csv(os.path.join(self.tempdir, "adjustments.csv"))
+
+        data_df = mine.concat_invoices(text_list)
+        print(data_df)
+        data_df.to_csv(os.path.join(self.tempdir, "data.csv"))
+
+        summary_df = mine.concat_summary(text_list)
+        print(summary_df)
+        summary_df.to_csv(os.path.join(self.tempdir, "summary.csv"))
 
     def browseFile(self):
         self.label_inv.destroy()
@@ -128,6 +150,15 @@ class GUI:
         self.label_save = Label(self.master, text="Save file path: " + self.save_folder, bg="black", fg="green",
                                 anchor='w', width=20, justify=LEFT)
         self.label_save.pack(fill=X, side=BOTTOM)
+
+    def zipdir(self, path_to_save):
+        f = os.path.join(path_to_save, "data-RooParse" + VERSION + ".zip")
+        if os.path.exists(f):  # Check if file exists, and delete if true
+            os.remove(f)
+        shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', self.tempdir)
+        messagebox.showinfo("Thanks!",
+                            "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
+        shutil.rmtree(self.tempdir)
 
     def save_message(self):
         messagebox.showinfo("Thanks!", "Data saved to :" + str(
