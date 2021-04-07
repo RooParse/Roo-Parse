@@ -6,8 +6,10 @@ from tkinter import messagebox
 import os
 import shutil
 import tempfile
+import pandas as pd
 # from mine import *
 import mine as mine
+from earnings_graphs import create_graphs_from_data
 
 '''
 After initial release changes to mine.py, the parsing script increase the version number to the next whole number.
@@ -107,7 +109,19 @@ class GUI:
                                 justify=LEFT)
         self.label_save.pack(fill=X, side=BOTTOM)
 
-        # self.test_return  # for debugging
+        # Directories for extracting and saving
+        self.inv_folder = ""
+        self.save_folder = ""
+
+        # initialise dataframes to keep data in
+        self.fa_df = pd.DataFrame()
+        self.data_df = pd.DataFrame()
+        self.summary_df = pd.DataFrame()
+
+        # Initialise dictionary for graphs
+        self.graphs = {}
+
+        # Temporary directory to save data before zipping
         self.tempdir = tempfile.mkdtemp()
         print(self.tempdir)
 
@@ -122,20 +136,30 @@ class GUI:
         # self.close_button.pack(fill=X)
 
     def miner(self, invoice_path):  # trying to move function to this file
-        text_list = mine.get_text_list(invoice_path)
 
-        fa_df = mine.concat_fee_adjustments(text_list)
-        # self.test_return = fa_df  # should be defined in init instead
-        # print(self.test_return)
-        fa_df.to_csv(os.path.join(self.tempdir, "adjustments.csv"))
+        if self.inv_folder == "":
+            messagebox.showinfo("Help", "Please first select a directory containing all (and only) invoice pdfs.")
 
-        data_df = mine.concat_invoices(text_list)
-        print(data_df)
-        data_df.to_csv(os.path.join(self.tempdir, "data.csv"))
+        else:
+            text_list = mine.get_text_list(invoice_path)
 
-        summary_df = mine.concat_summary(text_list)
-        print(summary_df)
-        summary_df.to_csv(os.path.join(self.tempdir, "summary.csv"))
+            self.fa_df = mine.concat_fee_adjustments(text_list)
+            # print(self.fa_df)
+            self.fa_df.to_csv(os.path.join(self.tempdir, "adjustments.csv"))
+
+            self.data_df = mine.concat_invoices(text_list)
+            # print(self.data_df)
+            self.data_df.to_csv(os.path.join(self.tempdir, "data.csv"))
+
+            self.summary_df = mine.concat_summary(text_list)
+            # print(self.summary_df)
+            self.summary_df.to_csv(os.path.join(self.tempdir, "summary.csv"))
+
+            self.graphs = create_graphs_from_data(self.data_df)
+
+            for key, plot in self.graphs.items():
+                print(plot)
+                plot.save(filename=os.path.join(self.tempdir, key + ".png"))
 
     def browseFile(self):
         self.label_inv.destroy()
@@ -152,17 +176,20 @@ class GUI:
         self.label_save.pack(fill=X, side=BOTTOM)
 
     def zipdir(self, path_to_save):
-        f = os.path.join(path_to_save, "data-RooParse" + VERSION + ".zip")
-        if os.path.exists(f):  # Check if file exists, and delete if true
-            os.remove(f)
-        shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', self.tempdir)
-        messagebox.showinfo("Thanks!",
-                            "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-        shutil.rmtree(self.tempdir)
+        if path_to_save == "":
+            messagebox.showinfo("Help", "Please first select a directory to save the output summary data.")
+        else:
+            f = os.path.join(path_to_save, "data-RooParse" + VERSION + ".zip")
+            if os.path.exists(f):  # Check if file exists, and delete if true
+                os.remove(f)
+            shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', self.tempdir)
+            messagebox.showinfo("Thanks!",
+                                "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, we are compiling a database to look into how fees have been changing over the years, so the more data we can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is completely anonymous, no identifiable information is harvested from the invoices. Only information about earnings, and not the rider, is saved to the data.zip archive. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
+            shutil.rmtree(self.tempdir)
 
     def save_message(self):
         messagebox.showinfo("Thanks!", "Data saved to :" + str(
-            self.save_folder) + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
+            self.save_folder) + "\n\n Please consider sending in your earnings data, we are compiling a database to look into how fees have been changing over the years, so the more data we can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is completely anonymous, no identifiable information is harvested from the invoices. Only information about earnings, and not the rider, is saved to the data.zip archive. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
 
     def help(self):
         messagebox.showinfo("Help", help_str)

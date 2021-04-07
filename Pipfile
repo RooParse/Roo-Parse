@@ -10,6 +10,9 @@ pandas = "*"
 pdfminer = "*"
 pillow = "*"
 pyinstaller = "*"
+matplotlib = "*"
+plotnine = "*"
+mizani = "*"
 
 [requires]
 python_version = "3.7"
