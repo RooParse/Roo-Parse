@@ -1,134 +1,131 @@
 from tkinter import *
 from tkinter.filedialog import askdirectory
-from tkinter import messagebox, ttk
-from PIL import Image, ImageTk
+from tkinter import messagebox
+import os
+import shutil
+import tempfile
+import pandas as pd
+import mine as mine
+from create_summaries import calculate_summaries, create_summary_graphs
+from terms_and_conditions_window import show_terms_window
+from datetime import datetime
+from resources import resources_dict
 
-from mine import *
+help_str = resources_dict['help_str']
+after_extraction_str = resources_dict['after_extraction_str']
+license_str = resources_dict['license']
+about_str = resources_dict['about']
+VERSION = resources_dict['version']
 
-liscense = '''
 
-This program was created to make tax returns easier and facilitate gathering of data so riders can see what the effects of changes in the algorythms are having on hourly rate over time.
-
-Begin license text.
-Copyright 2019
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-End license text.
-'''
-
-help_str = '''
-1. Slect a folder containing the invoices you wish to parse, it should then show the file path at the bottom of the window. \n
-
-2. Click run to extract the data from the pdfs to csv files. \n
-
-3. Select the folder you wish to save a zip file containing the csv files in, it should then show the file path at the bottom of the window. \n
-
-4. Click save. This will overwrite any folder called "data.zip" in the directory you selected. \n
-'''
-
-data_str = '''
-Greetings valued user! \n
-Please consider sending in your earnings data, i'm compiling a database to
-look into fees over time so the more data I can add to that database the 
-better. The results and the database will be published online so anyone 
-can view and analyse it themselves if they wish. All data is anonomous, 
-no identifyable information is harvested from the invoces. The only personal
-info in the invoices is the ridersname but this is not saved. The source 
-code of this app can be viewed on github at: https://github.com/RooParse/Roo_Parse 
- 
-If you would like to contribute to the database please send the zip
-file ouput containing the csv data to: rooparse@gmail.com
-
-Please also email with any questions and if you would like to 
-contribute to rooparse itself.
-'''
-def zipdir(path_to_save, path_to_compress): 
-    f = os.path.join(path_to_save, "data.zip" + VERSION)
-    if os.path.exists(f): # Check if file exists, and delete if true
-        os.remove(f)
-    shutil.make_archive(os.path.join(path_to_save, "data"), 'zip', path_to_compress)
-    messagebox.showinfo("Thank's!", "Data saved to :" + path_to_save + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-    
-
+# GUI Interface class
 class GUI:
+
     def __init__(self, master):
         self.master = master
-        master.title("Roo Parse " + VERSION)
-        master.configure(background='black')
+        master.title('Roo Parse ' + VERSION)
+        master.configure(background='white')
 
-        self.run_button = Button(master, text="Run", command = lambda: main(self.inv_folder), anchor='w', width=20,justify=LEFT)
-        self.run_button.pack(fill=X)    
+        self.inv_folder = None
+        self.save_folder = None
 
-        self.help_button = Button(master, text="Help", command=self.help,width=20, anchor='w', justify=LEFT)
-        self.help_button.pack(fill=X)   
+        self.help_button = Button(master, text='Help and instructions', command=self.help_window, width=25, anchor='w',
+                                  justify=LEFT)
+        self.help_button.pack(fill=X)
 
-        self.about_button = Button(master, text="About", command=self.about, anchor='w', width=20, justify=LEFT)
-        self.about_button.pack(fill=X)   
+        self.payslip_dir_select_button = Button(master, text='1. Select folder containing invoices',
+                                                command=self.select_payslip_dir, anchor='w', width=25, justify=LEFT)
+        self.payslip_dir_select_button.pack(fill=X)
 
-        self.save_button = Button(master, text="Save", command = lambda : zipdir (self.save_folder,'outputs'), anchor='w', width=20, justify=LEFT)
-        self.save_button.pack(fill=X)  
+        self.save_dir_select_button = Button(master, text='2. Select folder to save data',
+                                             command=self.select_save_dir, anchor='w', width=25, justify=LEFT)
+        self.save_dir_select_button.pack(fill=X)
 
-        self.browse_file = Button(master, text="Select invoice folder", command=self.browseFile, anchor='w', width=20, justify=LEFT)
-        self.browse_file.pack(fill=X)
+        self.run_and_save_button = Button(master, text='3. Analyse and save summary', state=DISABLED,
+                                          command=self.run_and_save, anchor='w', width=25, justify=LEFT)
+        self.run_and_save_button.pack(fill=X)
 
-        self.save_file = Button(master, text="Select folder to save data", command=self.saveFile, anchor='w', width=20, justify=LEFT)
-        self.save_file.pack(fill=X)
+        self.about_button = Button(master, text='About', command=self.show_about_window, anchor='w', width=25, justify=LEFT)
+        self.about_button.pack(fill=X)
 
-        image = Image.open("roo.png")
-        photo = ImageTk.PhotoImage(image)
+        # Directories for extracting and saving
+        self.inv_folder = ''
+        self.save_folder = ''
 
-        self.label_data_message = Label(self.master, text= data_str, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
-        self.label_data_message.pack(fill=X)
+        # initialise dataframes to keep data in
+        self.fa_df = pd.DataFrame()
+        self.data_df = pd.DataFrame()
 
-        label = Label(image=photo, borderwidth=0 , highlightthickness=0, relief=None, padx=0,pady=0)
-        label.image = photo # keep a reference!
-        label.pack()
+        self.summaries_dict = None
 
-        self.label_inv = Label(self.master, text="Invoices file path: ", bg="black", fg="green", anchor='w', width=20, justify=LEFT)
-        self.label_inv.pack(fill=X, side=BOTTOM)
+        # Temporary directory to save data before zipping
+        self.tempdir = tempfile.mkdtemp()
+        print(self.tempdir)
 
-        self.label_save = Label(self.master, text="Save file path: ", bg="black", fg="green", anchor='w', width=20, justify=LEFT)
-        self.label_save.pack(fill=X, side=BOTTOM)
+    def run_and_save(self):
+        self.miner()
+        self.zipdir()
 
-        # Text input bar---------------------#
-        #self.text = StringVar()
-        #self.e = Entry(root, textvariable=self.text)
-        #self.e.pack()
-        #self.run_button = Button(master, text="Run", command = lambda: main(self.e.get()))
-        #self.run_button.pack(fill=X)
+    def miner(self):  # trying to move function to this file
 
-        #self.close_button = Button(master, text="Close", command=master.quit)
-        #self.close_button.pack(fill=X)
+        if self.inv_folder == '' or self.inv_folder is None:
+            messagebox.showinfo('Help', 'Please first select a directory containing all (and only) invoice pdfs.')
 
+        else:
+            text_list = mine.get_text_list(self.inv_folder)
 
+            self.fa_df = mine.concat_fee_adjustments(text_list)
+            self.fa_df.to_csv(os.path.join(self.tempdir, 'All fee adjustments.csv'))
 
-    def browseFile(self):
-        self.label_inv.destroy()
+            self.data_df = mine.concat_invoices(text_list)
+            self.data_df.to_csv(os.path.join(self.tempdir, 'All sessions.csv'))
+
+            self.summaries_dict = calculate_summaries(data_df=self.data_df, output_dir=self.tempdir)
+            create_summary_graphs(summaries_dict=self.summaries_dict, output_dir=self.tempdir)
+
+    def select_payslip_dir(self):
         self.inv_folder = askdirectory()
-        self.label_inv = Label(self.master, text="Invoices file path: " + self.inv_folder, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
-        self.label_inv.pack(fill=X, side=BOTTOM)
 
-    def saveFile(self):
-        self.label_save.destroy()
+        if bool(self.inv_folder):
+            self.payslip_dir_select_button['text'] = '1. Select folder containing invoices (' + self.inv_folder + ')'
+            if bool(self.save_folder):
+                self.run_and_save_button['state'] = NORMAL
+
+    def select_save_dir(self):
         self.save_folder = askdirectory()
-        self.label_save = Label(self.master, text="Save file path: " + self.save_folder, bg="black", fg="green", anchor='w', width=20, justify=LEFT)
-        self.label_save.pack(fill=X, side=BOTTOM)
-        
-    def save_message(self):
-        messagebox.showinfo("Thank's!", "Data saved to :" + str(self.save_folder) + "\n\n Please consider sending in your earnings data, i'm compiling a database to look into fees over time so the more data I can add to that database the better. The results and the database will be published online so anyone can view and analyse it themselves if they wish. All data is anonomous, no identifyable information is harvested from the invoces. The only personal info in the invoices is the riders name but this is not saved. The source code of this app can be viewed on github. Send it to: rooparse@gmail.com")
-    
-    def help(self):
-        messagebox.showinfo("Help", help_str)
 
-    def about(self):
-        messagebox.showinfo("Help", liscense)
+        if bool(self.save_folder):
+            self.save_dir_select_button['text'] = '2. Select folder to save data (' + self.save_folder + ')'
+            if bool(self.inv_folder):
+                self.run_and_save_button['state'] = NORMAL
 
-root = Tk()
-my_gui = GUI(root)
-root.mainloop()
+    def zipdir(self):
+        if self.save_folder == '':
+            messagebox.showinfo('Help', 'Please first select a directory to save the output summary data.')
+        else:
+            zip_output_path = os.path.join(self.save_folder, 'Extracted data - RooParse ' + VERSION + ' - ' +
+                                           datetime.now().date().strftime('%Y-%m-%d') + '.zip')
+            if os.path.exists(zip_output_path):  # Check if file exists, and delete if true
+                os.remove(zip_output_path)
+            shutil.make_archive(zip_output_path, 'zip', self.tempdir)
+            messagebox.showinfo('Thanks!\n\n',
+                                'Data saved to:  ' + self.save_folder + '\n\n' + after_extraction_str)
 
+    @staticmethod
+    def help_window():
+        messagebox.showinfo('Help', help_str)
+
+    @staticmethod
+    def show_about_window():
+        messagebox.showinfo('About', about_str)
+
+
+accepted_terms = show_terms_window()
+
+if accepted_terms:
+    root = Tk()
+    root.geometry('500x130')
+    root.resizable(False, False)
+    my_gui = GUI(root)
+    root.mainloop()
+sys.exit(0)
