@@ -1,4 +1,4 @@
-# Roo-Parse
+# RooParse
 
 This program was created to make tax returns easier and facilitate gathering of data so riders can see what the effects of changes in the algorithms are having on hourly rate over time.
 
