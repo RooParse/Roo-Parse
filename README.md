@@ -6,7 +6,7 @@ This program was created to make tax returns easier and facilitate gathering of 
 
 ## Download
 ***
-You can download the latest release for Windows from (Releases)[https://github.com/RooParse/Roo-Parse/releases]. Alternatively you can run directly from Python code  if you have Python installed on your machine (see below).
+You can download the latest release for Windows from [Releases](https://github.com/RooParse/Roo-Parse/releases). Alternatively you can run directly from Python code  if you have Python installed on your machine (see below).
 
 
 <br />
