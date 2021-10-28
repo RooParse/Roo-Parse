@@ -37,7 +37,7 @@ def create_df(text):
     s = s.split('DayDateTime')[1]
     s = s.split('Fee Adjustments')[0]  # Take all text before 'Fee Adjustments'
 
-    # with open("raw.txt", "w") as raw:
+    # with open('raw.txt', 'w') as raw:
     #     raw.write(s)
     # get time in and out as one then split
     t = re.findall('..:....:..', s)  # re for time in
@@ -51,7 +51,7 @@ def create_df(text):
     # d = re.findall('\d{2}\D{3,}\d{4}',s) # re for date
     date_list = re.findall('\d{2} [A-Za-z]{3,} \d{4}', s)
     dt = [datetime.strptime(x, '%d %B %Y') for x in date_list]
-    d = [datetime.strftime(x, "%d-%m-%y") for x in dt]
+    d = [datetime.strftime(x, '%d-%m-%y') for x in dt]
 
     ov = re.findall('\d*: £\d{1,}.\d{2}', s)  # get number of orders and value in £
     o = [i.split(': ')[0] for i in ov]  # Split into orders and value
@@ -69,8 +69,8 @@ def create_df(text):
             'Date': d,
             'Time_in': ti,
             'Time_out': to,
-            'Hours_worked': h,
-            'Orders': o,
+            'hours_worked': h,
+            'orders_delivered': o,
             'Total': v
         }
     )
@@ -79,7 +79,7 @@ def create_df(text):
 
 
 def concat_invoices(text_list):
-    data_df = pd.DataFrame(columns=['Day', 'Date', 'Time_in', 'Time_out', 'Hours_worked', 'Orders', 'Total'])
+    data_df = pd.DataFrame(columns=['Day', 'Date', 'Time_in', 'Time_out', 'hours_worked', 'orders_delivered', 'Total'])
 
     for i in text_list:
         df = create_df(i)
@@ -94,11 +94,11 @@ def create_summary_df(text):
     split = re.split('(.\d+.\d+)', s)  # Split based £xx.xx where x is a didget
     date_list = re.findall('\d{2} [A-Za-z]{3,} \d{4}', text)
     dt = [datetime.strptime(x, '%d %B %Y') for x in date_list]
-    date_list_converted = [datetime.strftime(x, "%d-%m-%y") for x in dt]
+    date_list_converted = [datetime.strftime(x, '%d-%m-%y') for x in dt]
     date = date_list_converted[0]
 
     for i in range(len(split)):  # Remove weird thing
-        if split[i] == "\x0c":
+        if split[i] == '\x0c':
             split.remove(split[i])
 
     split = [re.sub('£|Â', '', i) for i in split]
@@ -121,7 +121,7 @@ def create_summary_df(text):
         }
     )
     df.set_index('names_' + date, inplace=True)
-    return (df)
+    return df
 
 
 def concat_summary(text_list):
@@ -133,24 +133,24 @@ def concat_summary(text_list):
         df_list.append(summary_df)
 
     for i, df in enumerate(df_list):
-        print(df)
+        # print(df)
         full_df = pd.merge(full_df, df_list[i], left_index=True, right_index=True, how='outer')
 
     return full_df
 
 
 def create_fee_adjustments_df(text):
-    head = ["Category", "Note", "Amount", "Date"]
+    head = ['Category', 'Note', 'Amount', 'Date']
 
     date_list = re.findall('\d{2}\D{3,}\d{4}', text)[0]
-    print(type(date_list))
+    # print(type(date_list))
     if type(date_list) == str:
         date_list = [date_list]
 
     dt = [datetime.strptime(x, '%d %B %Y') for x in date_list]
-    print(dt)
-    date = [datetime.strftime(x, "%d-%m-%y") for x in dt]
-    print(date)
+    # print(dt)
+    date = [datetime.strftime(x, '%d-%m-%y') for x in dt]
+    # print(date)
     date = [re.sub("\[|'", "", i) for i in date]
     s = text.split('Summary')[0]  # Take all text after 'Summary'
     if re.search('Fee Adjustments', s):
@@ -161,10 +161,10 @@ def create_fee_adjustments_df(text):
     total = re.split('(£\d+.\d{2})', s)[-3:-1]
     ex_total = re.split('(£\d+.\d{2})', s)[:-3]
 
-    cat = re.findall("[A-Z]{2,} [A-Z]{2,}", str(ex_total))
+    cat = re.findall('[A-Z]{2,} [A-Z]{2,}', str(ex_total))
     cat = [i[:-1] for i in cat]
 
-    note = re.findall("[A-Z][a-z][A-Za-z0-9 ]*", str(ex_total))
+    note = re.findall('[A-Z][a-z][A-Za-z0-9 ]*', str(ex_total))
 
     amount = re.findall('(£\d+.\d{2})', str(ex_total))
     amount = [re.sub('£|Â|-', '', i) for i in amount]
@@ -173,7 +173,7 @@ def create_fee_adjustments_df(text):
     for c, n, a, d in zip(cat, note, amount, date):
         list_list.append([c, n, a, d])
 
-    total.insert(1, "-")
+    total.insert(1, '-')
 
     df = pd.DataFrame()
 
@@ -200,8 +200,8 @@ def concat_fee_adjustments(text_list):
 def get_text_list(invoice_path):
     text_list = []
     for filename in os.listdir(invoice_path):
-        if filename.endswith(".pdf"):
-            print(os.path.join(invoice_path, filename))
+        if filename.endswith('.pdf'):
+            # print(os.path.join(invoice_path, filename))
             text = extract_text(os.path.join(invoice_path, filename))
             text_list.append(text)
     return text_list

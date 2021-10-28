@@ -1,67 +1,53 @@
-# Roo_Parse
+# Roo-Parse
 
 This program was created to make tax returns easier and facilitate gathering of data so riders can see what the effects of changes in the algorithms are having on hourly rate over time.
 
-## Instalation
-Should work in powershell and bash
-* [install python 3.7](https://www.python.org/downloads/release/python-379/)
-* [Install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-* git clone https://github.com/RooParse/Roo_Parse.git
-* cd Roo_Parse
-* pip3 install pipenv
-* python3 -m pipenv install
-* python3 -m pipenv run gui.py 
+<br />
+
+## Download
+***
+You can download the latest release for Windows from Releases. Alternatively you can run directly from Python code  if you have Python installed on your machine (see below).
+
+
+<br />
 
 ## Usage
 ***
 
-1. Slect a folder containing the invoices you wish to parse, it should then show the file path at the bottom of the window. 
+1. Download all PDF invoices you wish to summarise and put them in the folder in your computer. Then, click on \"1. Select folder containing invoices\", navigate to the folder, and select it. Make sure there aren't any other files in the folder except for the invoices.
+2. Click on \"2. Select folder to save data\" and select the directory you wish this programme to save the summarised results.
+3. Click on \"3. Analyse and save summary\". It may take a few moments, but after the analysis is completed, a pop-up window will inform you if it was successful.
+4. You can now access your summarised data in a ZIP file saved in the folder you specified.
 
-2. Click run to extract the data from the pdfs to csv files. 
+<br />
 
-3. Select the folder you wish to save a zip file containing the csv files in, it should then show the file path at the bottom of the window. 
-
-4. Click save. This will overwrite any folder called "data.zip" in the directory you selected. 
-
-![image](https://i.imgur.com/w2aJVEB.png)
-
-## To Do
+## Run on any platform using Python
 ***
-* Write up read me properly
-* Settle on a format for data
-* Finish GUI
-    * Add help 
-    * Add about - info, contact etc
-    * Add license and warnings etc
-    * dark mode?
-* Create Column for file name of invoice
-* Fix bug with dates, alternating dashes and slashes for some reason 
+* [Install Python 3.7](https://www.python.org/downloads/release/python-379/)
+* [Install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* In powershell / bash:
+```bash
+git clone https://github.com/RooParse/Roo_Parse.git
+cd Roo_Parse
+pip3 install pipenv
+python3 -m pipenv install
+python3 -m pipenv run gui.py 
+```
+<br />
 
-
-#### For data processing.
-* Create script to read the rooparse email box 
-* Add a system to pass on the rooparse version in the file name 
-
-## Done
-***
-* Change format of date
-* Merge summary dataframes by date
-* Parse drops, fee adjustments and summery to pandas df
-* Zip CSVs for emailing
-* Make sure correct date is parsed consistently 
-* Adjustments df
-
-## Liscense
-
+## License
 ***
 
-Begin license text.  
-Copyright 2019 
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Copyright (C) 2021  Workers' Observatory https://workersobservatory.org/
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, version 3. This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-End license text.
+See terms and conditions [here](license.txt).
+
+See the GNU Affero General Public License for more details. <https://www.gnu.org/licenses/>.
