@@ -1,6 +1,6 @@
 # RooParse
 
-This program was created to make tax returns easier and facilitate gathering of data so riders can see what the effects of changes in the algorithms are having on hourly rate over time.
+This program was created to make tax returns easier and facilitate gathering of data so riders (currently works on Deliveroo invoices) can see what the effects of changes in the algorithms are having on hourly rate over time.
 
 <br />
 
@@ -14,7 +14,7 @@ You can download the latest release for Windows from Releases. Alternatively you
 ## Usage
 ***
 
-1. Download all PDF invoices you wish to summarise and put them in the folder in your computer. Then, click on \"1. Select folder containing invoices\", navigate to the folder, and select it. Make sure there aren't any other files in the folder except for the invoices.
+1. Download all PDF invoices you wish to summarise and put them in the folder in your computer. Then, click on \"1. Select folder containing invoices\", navigate to the folder, and select it. Make sure there aren't any other files in the folder except for the Deliveroo invoices.
 2. Click on \"2. Select folder to save data\" and select the directory you wish this programme to save the summarised results.
 3. Click on \"3. Analyse and save summary\". It may take a few moments, but after the analysis is completed, a pop-up window will inform you if it was successful.
 4. You can now access your summarised data in a ZIP file saved in the folder you specified.
